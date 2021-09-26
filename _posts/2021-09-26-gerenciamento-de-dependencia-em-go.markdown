@@ -8,7 +8,7 @@ date:   2021-09-26 09:44:00 -0300
 
 Cada linguagem de programação possui uma maneira de instalar dependências/bibliotecas e gerenciar as versões de cada uma dessas dependências no projeto. A maneira com que o Go gerencia suas dependências desde a versão 1.11 é utilizando Módulos *(Go Modules)*. Em versões passadas do Go as dependências eram gerenciadas com ferramentas auxiliares como o [dep](https://github.com/golang/dep) e é possível migrar para o Go Modules, mais informações sobre como fazer isso pode ser vistas na [wiki do Go](https://github.com/golang/go/wiki/Modules).
 
-Basicamente ao iniciar um novo projeto em Go utilizando na raíz do projeto o comando `go mod init meu-modulo` é criado um novo módulo. Nesse comando o `meu-modulo` pode ter o caminho completo para um repositório de um sistema de controle de versionamento, por exemplo , `github.com/brenoassp/meu-modulo`.
+Para iniciar um novo projeto em Go utilizando o Go Modules vá até a raíz do projeto e execute o comando `go mod init meu-modulo`. Nesse comando o `meu-modulo` pode ter o caminho completo para um repositório de um sistema de controle de versionamento, por exemplo , `github.com/brenoassp/meu-modulo`.
 
 O comando `go mod init` gera um arquivo com nome`go.mod`que contém o nome do módulo criado junto com a versão do Go utilizada, como mostrado abaixo:
 
@@ -77,9 +77,11 @@ Ou seja, o fasthttp deixa de ser uma dependência indireta para ser uma dependê
 
 Além do `go.mod` existe também o arquivo `go.sum` que contém todas as dependências junto com a hash que representa o conteúdo do pacote. Isso serve pra garantir que os pacotes baixados futuramente no projeto são iguais aos pacotes baixados no momento em que a dependência foi adicionada no projeto. Ambos os arquivos devem ser versionados e é recomendável usar o comando `go mod tidy` regularmente para manter esses arquivos atualizados somente com as dependências que estão realmente sendo utilizadas.
 
-Não é necessário ficar utilizando o `go get` para adicionar todos os pacotes que serão utilizados pois ao compilar o projeto (`go build`) ou executar os testes (`go test`) as dependências serão baixadas automaticamente com base nas importações feitas no início do aquivo com extensão `.go`. A única alteração que não é feita automaticamente nesses casos é a verificação se alguma dependência existente no arquivo `go.mod` e `go.sum` já não é mais necessária por não estar sendo utilizada e, consequentemente, não é removida. Nesse caso é preciso executar um `go mod tidy` que removerá esses pacotes não utilizados.
+Não é necessário ficar utilizando o `go get` para adicionar todos os pacotes que serão utilizados pois ao compilar o projeto (`go build`) ou executar os testes (`go test`) as dependências serão baixadas automaticamente com base nas importações feitas no início dos arquivos com extensão `.go` e o `go.mod` é atualizado automaticamente.
 
-Diferentemente de vários gerenciadores de dependências de outras linguagens, o Go Module não instala as dependências do projeto em uma pasta contida na raiz do repositório. O que controla onde será salvo as bibliotecas são as variáveis de ambiente **GOPATH** e **GOBIN**. Caso essas variáveis não existirem, os pacotes são salvos em `/home/[user]/go`.
+Durante o desenvolvimento é comum que algumas dependências deixem de ser necessárias, mas essas dependências não são removidas automaticamente dos arquivo `go.mod` e `go.sum` durante a compilação ou execução dos testes. Nesse caso, é preciso executar o comando `go mod tidy` que irá verificar as dependências que não são mais necessárias e removê-las desses arquivos.
+
+Diferentemente de vários gerenciadores de dependências de outras linguagens, o Go Module não instala as dependências do projeto em uma pasta contida na raiz do repositório. O que controla onde será salvo as bibliotecas são as variáveis de ambiente **GOPATH** e **GOBIN**. Caso elas não estejam definidas a pasta padrão utilizada é: `/home/[user]/go`.
 
 **GOBIN:** indica onde serão instalados os binários.
 **GOPATH**: indica onde serão instalados os pacotes. Se essa variável existir os binários são instalados na pasta `bin` do primeiro diretório da lista de diretórios existentes nessa variável.
@@ -92,7 +94,7 @@ Os módulos são versionados utilizando a especificação de versionamento semâ
 
 **Z:** Número que representa a versão de correção (Patch Version). É incrementada quando é realizado alguma correção de bug.
 
-Acredito que o mais importante a se saber é que, por padrão, o Go não atualiza sozinho a *major version* dos pacotes ao utilizar comandos como `got get -u modulo`, ele apenas atualiza para a versão mais recente da *minor version* e *patch version*. Quando existe uma atualização com quebra de compatibilidade em algum módulo é possível ver de forma explícita pois é necessário indicar essa versão ao importar o pacote dentro do código da seguinte forma:
+Acredito que o mais importante a se saber é que, por padrão, o Go não atualiza sozinho a *major version* dos pacotes ao utilizar comandos como `go get -u modulo`, ele apenas atualiza para a versão mais recente da *minor version* e *patch version*. Quando existe uma atualização com quebra de compatibilidade em algum módulo é possível ver de forma explícita pois é necessário indicar essa versão ao importar o pacote dentro do código da seguinte forma:
 
 ```
 import "github.com/brenoassp/meu-modulo/v2"
