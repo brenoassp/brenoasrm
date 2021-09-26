@@ -12,11 +12,11 @@ Basicamente ao iniciar um novo projeto em Go utilizando na raíz do projeto o co
 
 O comando `go mod init` gera um arquivo com nome`go.mod`que contém o nome do módulo criado junto com a versão do Go utilizada, como mostrado abaixo:
 
-```
+{% highlight go %}
 module github.com/brenoassp/meu-modulo
 
 go 1.17
-```
+{% endhighlight %}
 
 A medida que novos pacotes forem sendo adicionados no projeto esse arquivo vai sendo modificado com os pacotes instalados, por exemplo, podemos instalar um novo pacote com o comando a seguir:
 
@@ -24,7 +24,7 @@ A medida que novos pacotes forem sendo adicionados no projeto esse arquivo vai s
 
 Após isso o arquivo `go.mod` terá o seguinte conteúdo:
 
-```
+{% highlight go %}
 module github.com/brenoassp/meu-modulo
 
 go 1.17
@@ -35,13 +35,13 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.30.0 // indirect
 )
-```
+{% endhighlight %}
 
 Apesar de ter instalado apenas uma dependência, mais de um pacote foi instalado, isso acontece porque geralmente todo pacote que instalamos depende também de outros pacotes. Como esses pacotes internos das dependências que instalamos não são utilizados diretamente por nós eles são marcados como dependência indireta com o comentário `indirect` depois da versão. Nesse caso específico, até mesmo a dependência do fasthttp que instalamos está sendo marcada como dependência indireta pois não estamos usando ela em nenhum lugar no código, apesar de ter sido instalada.
 
 Ao criar um código que utilize o fasthttp como o código abaixo, ele deixará de ser uma dependência indireta no nosso projeto.
 
-```
+{% highlight go %}
 package main
 
 import (
@@ -55,11 +55,11 @@ func main() {
 		fmt.Fprintln(ctx, "Hello, world")
 	})
 }
-```
+{% endhighlight %}
 
 O comando `go mod tidy` é responsável por atualizar o `go.mod` seja atualizando ou removendo dependências. Ao executar esse comando o `go.mod`passa a ter o seguinte conteúdo:
 
-```
+{% highlight go %}
 module github.com/brenoassp/meu-modulo
 
 go 1.17
@@ -71,8 +71,7 @@ require (
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 )
-
-```
+{% endhighlight %}
 
 Ou seja, o fasthttp deixa de ser uma dependência indireta para ser uma dependência direta já que está sendo utilizado. Se removermos o código que utiliza o fasthttp e executarmos o `go mod tidy` novamente ele removerá do `go.mod` as dependências pois elas não estão sendo utilizadas em nenhum momento.
 
@@ -88,7 +87,9 @@ Diferentemente de vários gerenciadores de dependências de outras linguagens, o
 Os módulos são versionados utilizando a especificação de versionamento semântico [SemVer](https://semver.org/). Em resumo, essa especificação diz que a nomenclatura do pacote deve ser do tipo **X.Y.Z**, onde:
 
 **X:** Número que representa a versão principal do pacote (Major Version). É incrementado somente quando há quebra de compatibilidade na API.
+
 **Y:** Número que representa a versão secundária (Minor Version). É incrementada quando há adição de novas funcionalidades, mas sem quebrar a compatibilidade com a versão anterior.
+
 **Z:** Número que representa a versão de correção (Patch Version). É incrementada quando é realizado alguma correção de bug.
 
 Acredito que o mais importante a se saber é que, por padrão, o Go não atualiza sozinho a *major version* dos pacotes ao utilizar comandos como `got get -u modulo`, ele apenas atualiza para a versão mais recente da *minor version* e *patch version*. Quando existe uma atualização com quebra de compatibilidade em algum módulo é possível ver de forma explícita pois é necessário indicar essa versão ao importar o pacote dentro do código da seguinte forma:
