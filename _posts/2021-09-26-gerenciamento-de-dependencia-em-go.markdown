@@ -85,6 +85,20 @@ Diferentemente de vários gerenciadores de dependências de outras linguagens, o
 **GOBIN:** indica onde serão instalados os binários.
 **GOPATH**: indica onde serão instalados os pacotes. Se essa variável existir os binários são instalados na pasta `bin` do primeiro diretório da lista de diretórios existentes nessa variável.
 
+Os módulos são versionados utilizando a especificação de versionamento semântico [SemVer](https://semver.org/). Em resumo, essa especificação diz que a nomenclatura do pacote deve ser do tipo **X.Y.Z**, onde:
+
+**X:** Número que representa a versão principal do pacote (Major Version). É incrementado somente quando há quebra de compatibilidade na API.
+**Y:** Número que representa a versão secundária (Minor Version). É incrementada quando há adição de novas funcionalidades, mas sem quebrar a compatibilidade com a versão anterior.
+**Z:** Número que representa a versão de correção (Patch Version). É incrementada quando é realizado alguma correção de bug.
+
+Acredito que o mais importante a se saber é que, por padrão, o Go não atualiza sozinho a *major version* dos pacotes ao utilizar comandos como `got get -u modulo`, ele apenas atualiza para a versão mais recente da *minor version* e *patch version*. Quando existe uma atualização com quebra de compatibilidade em algum módulo é possível ver de forma explícita pois é necessário indicar essa versão ao importar o pacote dentro do código da seguinte forma:
+
+```
+import "github.com/brenoassp/meu-modulo/v2"
+```
+
+De qualquer forma, sempre que for atualizada alguma biblioteca no projeto é interessante rodar os testes do projeto para garantir que nada foi quebrado, independentemente da atualização que foi feita.
+
 ### TL;DR;
 
 |Comando|Exemplo|Descrição
