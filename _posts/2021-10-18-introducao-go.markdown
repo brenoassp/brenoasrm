@@ -45,6 +45,14 @@ func main() {
 }
 ```
 
+A princípio a implementação em Go pode parecer mais complicada por exigir mais linhas de código, mas na prática é mais simples de lidar com o código pelos seguintes motivos:
+
+1 - Por existir apenas essa forma de implementação o desenvolvedor não precisa pensar qual das alternativas disponíveis ele irá utilizar naquele momento. Isso pode parecer algo irrelevante, mas não prática não é.
+
+2 - Ao ter várias features diferentes que podem ser utilizadas para o mesmo propósito, o desenvolvedor necessita saber sobre a implementação interna dessas features para escolher qual delas usar. Da mesma forma, outros desenvolvedores que trabalharão futuramente no código precisarão desse conhecimento e ao lerem o código "perderão tempo" pensando o porquê da implementação ter sido feita daquela forma e não de outra maneira.
+
+3 - Em muito dos casos, o desenvolvedor não terá o conhecimento da estrutura interna da linguagem e acabará usando uma feature com performance pior sem necessidade.
+
 ### Simplicidade
 
 Gerenciamento de memória com garbage collector.
