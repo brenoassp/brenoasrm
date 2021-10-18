@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "Concorrência em Go"
-date:   2021-10-11 17:30:00 -0300
+title: "Concorrência em Go (em construção)"
+date: 2021-10-11 17:30:00 -0300
 ---
 
 # Concorrência em Go
@@ -45,6 +45,7 @@ func requestApiTerceiros2() string {
 ```
 
 **Resultado da execução do código**
+
 ```golang
 go run main.go
 2021/10/11 16:59:35 inicio
@@ -60,6 +61,7 @@ Ao utilizar concorrência ambas as requisições podem ser feitas ao mesmo tempo
 ![]({{site.url}}/assets/img/concorrencia-em-go/intro-com-concorrencia-2.png)
 
 **Código com concorrência**
+
 ```golang
 package main
 
@@ -85,7 +87,9 @@ func requestApiTerceiros2() {
 	log.Println("resposta api terceiros 2")
 }
 ```
+
 **Resultado da execução do código**
+
 ```golang
 go run main2.go
 2021/10/11 17:01:17 inicio
@@ -93,9 +97,10 @@ go run main2.go
 2021/10/11 17:01:18 resposta api terceiros 1
 ```
 
-Em suma, podemos ver que conseguimos otimizar nosso código usando concorrência. Desse modo, é importante saber como trabalhar com concorrência para ter a habilidade de fazer o uso dessa característica da linguagem quando for apropriado. 
+Em suma, podemos ver que conseguimos otimizar nosso código usando concorrência. Desse modo, é importante saber como trabalhar com concorrência para ter a habilidade de fazer o uso dessa característica da linguagem quando for apropriado.
 
 É importante conhecer alguns conceitos da linguagem para trabalhar bem com concorrência, são eles:
+
 - Go Routines
 - Channels
 - WaitGroup
@@ -126,7 +131,7 @@ func main(){
 }
 ```
 
-Ao executar ambos os códigos é possível notar que na chamada normal de função é exibido na tela o texto normalmente, enquanto que ao chamar utilizando Go Routine o texto não é exibido. 
+Ao executar ambos os códigos é possível notar que na chamada normal de função é exibido na tela o texto normalmente, enquanto que ao chamar utilizando Go Routine o texto não é exibido.
 
 O motivo de isso acontecer é porque esse código executa a função sayHi em uma thread separada e não fica esperando a finalização dessa thread. Como não existe mais nenhum código após a criação dessa Go Routine então o programa é finalizado sem nunca ter o retorno da função. Um jeito simples de resolver isso é adicionar um tempo de espera no código da seguinte forma:
 
@@ -154,15 +159,18 @@ out := make(chan string, 1) // cria um channel vazio do tipo string que é capaz
 
 Ao criar uma variável do tipo channel o seu valor default é nil. Para inicializar o channel como sendo um channel vazio é preciso utilizar a função `make`, assim como é feito com variáveis do tipo slice e map.
 
-O operador utilizado para inserir ou ler dados de um channel é o operador `<-`, com o sentido dessa seta apontando para onde o dado está indo. 
+O operador utilizado para inserir ou ler dados de um channel é o operador `<-`, com o sentido dessa seta apontando para onde o dado está indo.
 
 **Código**
+
 ```golang
 out := make(chan string, 1)
 out <- "myString" //Adiciona uma string no channel criado
 fmt.Println(<-out) //Imprime string armazenada no channel criado
 ```
+
 **Resultado**
+
 ```
 myString
 ```
@@ -170,11 +178,14 @@ myString
 Um fato interessante sobre como channels funcionam é que ao tentar ler o conteúdo de um channel vazio ou ao tentar escrever um dado em um channel sem espaço o código pára e fica esperando até ter espaço suficiente no channel. Podemos ver esse comportamento ao usar o exemplo acima só que removendo a escrita no channel:
 
 **Código**
+
 ```golang
 out := make(chan string, 1)
 fmt.Println(<-out) //Imprime string armazenada no channel criado
 ```
+
 **Resultado**
+
 ```
 fatal error: all goroutines are asleep - deadlock!
 
@@ -186,6 +197,7 @@ exit status 2
 
 A mensagem de erro mostra que ocorreu um deadlock pois não existe nenhuma Go Routine sendo executada além da função main e ela está parada esperando algo ser escrito no channel. O deadlock ocorre porque nunca será escrito algo no channel já que o main está parado tentando ler do canal e não existe nenhuma outra Go Routine sendo executada. Se criarmos uma Go Routine que não faz nada e que fique rodando direto, o erro não ocorre mais. Veja o exemplo abaixo:
 **Código**
+
 ```golang
 func main() {
 	out := make(chan string, 1)
@@ -197,12 +209,14 @@ func main() {
 	fmt.Print(<-out)
 }
 ```
+
 **Resultado**
+
 ```
 Nada impresso na tela
 ```
 
-Se for parar pra pensar, essa abordagem para solucionar o erro de deadlock nesse exemplo não resolve nenhum problema de fato pois esse problema de deadlock só existe porque estamos usando channel em um local que deveríamos estar usando uma simples variável do tipo string. No entanto, haverá casos onde essa tática será útil  como quando formos construir alguma pipeline para execução de código concorrente.
+Se for parar pra pensar, essa abordagem para solucionar o erro de deadlock nesse exemplo não resolve nenhum problema de fato pois esse problema de deadlock só existe porque estamos usando channel em um local que deveríamos estar usando uma simples variável do tipo string. No entanto, haverá casos onde essa tática será útil como quando formos construir alguma pipeline para execução de código concorrente.
 
 ### Compartilhando channels entre Go Routines
 
@@ -226,7 +240,7 @@ func sayHi(n int, out chan string) {
 }
 ```
 
-É interessante notar que o mesmo channel está sendo usado nas quatro Go Routines criadas. O channel foi criado com a função `make` sem passar o tamanho como segundo argumento, isso indica que o channel criado não possui buffer. Na prática isso indica que um dado só poderá fluir nesse canal quando tiver uma parte do código lendo e outra escrevendo pois não existe nenhum local para armazenar esse valor. 
+É interessante notar que o mesmo channel está sendo usado nas quatro Go Routines criadas. O channel foi criado com a função `make` sem passar o tamanho como segundo argumento, isso indica que o channel criado não possui buffer. Na prática isso indica que um dado só poderá fluir nesse canal quando tiver uma parte do código lendo e outra escrevendo pois não existe nenhum local para armazenar esse valor.
 
 No exemplo acima, assim que uma Go Routine escrever no canal o channel será bloqueado para escrita até esse valor for removido do canal pela função Println, sendo assim não existe uma concorrência de fato nesse código já que as Go Routines criadas estão sempre aguardando a liberação do canal.
 
