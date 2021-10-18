@@ -193,6 +193,8 @@ func add(x int, y int) int {
 
 ## Criando uma API simples
 
+Diferentemente de outras linguagens como PHP, Java e Python, o Go não precisa de um servidor web como Apache ou Nginx para funcionar. O servidor é criado pelo próprio código do Go como mostrado no exemplo abaixo. Esse código é funcional e responde à requisições na url `localhost:8080/ping`.
+
 ```go
 package main
 
