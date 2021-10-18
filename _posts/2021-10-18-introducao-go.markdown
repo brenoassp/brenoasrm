@@ -10,7 +10,7 @@ A linguagem Go possui vários pontos positivos como performance, legibilidade e 
 
 ### Performance
 
-- Eficiência de linguagem com tipagem estática.
+- Linguagem com tipagem estática com boa performance se assemelhando à linguagens como C++.
 
 - Compilação rápida.
 
@@ -18,7 +18,7 @@ A linguagem Go possui vários pontos positivos como performance, legibilidade e 
 
 ### Legibilidade
 
-Uma única forma de fazer as coisas garante facilidade de leitura e escrita do código. Por exemplo, o Javascript possui a função map, já no Go precisamos utilizar o for para fazer algo similar. Veja abaixo o exemplo comparando a implementação do map com o for no Go e utilizando o map via Javascript.
+Uma única forma de fazer as coisas garante facilidade de leitura e escrita do código. Por exemplo, o Javascript possui a função map, já no Go precisamos utilizar o for para fazer algo similar. Veja abaixo o exemplo comparando a implementação com o for no Go e utilizando o map via Javascript.
 
 ```javascript
 // Javascript
@@ -47,25 +47,23 @@ func main() {
 
 A princípio a implementação em Go pode parecer mais complicada por exigir mais linhas de código, mas na prática é mais simples de lidar com o código pelos seguintes motivos:
 
-1 - Por existir apenas essa forma de implementação o desenvolvedor não precisa pensar qual das alternativas disponíveis ele irá utilizar naquele momento. Isso pode parecer algo irrelevante, mas não prática não é.
+1 - Por existir apenas essa forma de implementação o desenvolvedor não precisa pensar qual das alternativas disponíveis ele irá utilizar naquele momento. Isso pode parecer algo irrelevante, mas não prática não é. Ao ter várias _features_ diferentes que podem ser utilizadas para o mesmo propósito, o desenvolvedor precisa saber sobre a implementação interna dessas _features_ para escolher qual delas usar, caso contrário ele pode acabar optando por uma solução menos eficiente e futuramente colher os frutos dessa decisão com problemas de performance. Além disso, outros desenvolvedores que trabalharão futuramente no código precisarão desse conhecimento e ao lerem o código "perderão tempo" pensando o porquê da implementação ter sido feita daquela forma e não de outra.
 
-2 - Ao ter várias features diferentes que podem ser utilizadas para o mesmo propósito, o desenvolvedor necessita saber sobre a implementação interna dessas features para escolher qual delas usar. Da mesma forma, outros desenvolvedores que trabalharão futuramente no código precisarão desse conhecimento e ao lerem o código "perderão tempo" pensando o porquê da implementação ter sido feita daquela forma e não de outra maneira.
-
-3 - Em muito dos casos, o desenvolvedor não terá o conhecimento da estrutura interna da linguagem e acabará usando uma feature com performance pior sem necessidade.
+2 - Em muito dos casos, o desenvolvedor não terá o conhecimento da estrutura interna da linguagem e acabará usando uma _feature_ com performance pior sem necessidade.
 
 ### Simplicidade
 
-Gerenciamento de memória com garbage collector.
+Gerenciamento de memória com _garbage collector_. Nesse caso o desenvolvedor não precisa se preocupar com gerenciamento de memória manual visto que o _garbage collector_ roda em background e já faz esse trabalho.
 
 Geração de documentação automática com godoc.
 
 ## Por quê Go foi criado?
 
-Go foi criado com o objetivo de ter desempenho similar ao de linguagens estaticamente tipadas como C++, mas sem a complexidade envolvida durante o desenvolvimento do código. Nesse sentido, o objetivo era ter a facilidade de escrita de código de uma linguagem dinâmica como Python.
+Go foi criado com o objetivo de ter desempenho similar ao de linguagens estaticamente tipadas como C++, mas sem a complexidade envolvida durante o desenvolvimento do código. Nesse sentido, o objetivo era ter a facilidade de escrita de código de uma linguagem dinâmica como Python. Desse modo, o melhor dos dois mundos seria extraído, a produtividade do Python com a performance do C++.
 
 Além disso, Go foi criado com concorrência em mente, diferente de linguagens como C++ e Java que introduziram essa característica ao longo do tempo visto que são linguagens bem mais antigas.
 
-Por fim, os criadores de Go utilizaram a experiência de muitos anos na área de desenvolvimento e todas as duas dores desse período para fazer uma linguagem que resolvesse os problemas existentes de forma elegante e simples.
+Por fim, os criadores da linguagem Go utilizaram a experiência de muitos anos na área de desenvolvimento e todas as suas dores desse período para fazer uma linguagem que resolvesse vários problemas existentes de forma elegante e simples.
 
 ## Casos de Uso
 
