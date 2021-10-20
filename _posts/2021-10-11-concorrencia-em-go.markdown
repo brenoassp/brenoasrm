@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Concorrência em Go (em construção)"
+title: "Concorrência em Go"
 date: 2021-10-11 17:30:00 -0300
 ---
 
@@ -109,7 +109,7 @@ Em suma, podemos ver que conseguimos otimizar nosso código usando concorrência
 
 Uma Go routine é uma thread leve que é gerenciada pelo Go e é utilizada para rodar algum código específico que esteja dentro de uma função.
 
-Não é preciso ter nenhuma característica específica para conseguir executar uma função dentro de uma Go Routine, basta utilizar a sintaxe apropriada durante a chamada dessa função.
+Não é preciso ter nenhuma característica específica para conseguir executar uma função dentro de uma Go Routine, basta utilizar a palavra chamada _go_ antes da chamada dessa função.
 
 ### Chamada de função normal
 
@@ -247,3 +247,86 @@ No exemplo acima, assim que uma Go Routine escrever no canal o channel será blo
 Também nesse exemplo, o programa não garante ordem de execução das Go Routines visto que são threads de execução independentes.
 
 ## WaitGroup
+
+Um WaitGroup permite parar a execução do código e aguardar até que todas as Go Routines escolhidas terminem sua execução. Dessa forma, é possível fazer código que depende do resultado de múltiplas Go Routines. Veja abaixo um exemplo de uso de WaitGroup para aguardar a execução da execução de 4 Go Routines.
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	// Cria uma variável do tipo WaitGroup
+	var wg sync.WaitGroup
+
+	for i := 1; i < 5; i++ {
+		// Adiciona 1 ao contador de Go Routines do WaitGroup wg
+		wg.Add(1)
+
+		// Cria Go Routine passando o WaitGroup criado como parâmetro
+		go sayHi(&wg, i)
+	}
+
+	// Aguarda até o contador de Go Routines do WaitGroup wg chegar a zero
+	wg.Wait()
+
+	fmt.Println("Fim")
+}
+
+func sayHi(wg *sync.WaitGroup, n int) {
+	fmt.Println(n)
+
+	// Decrementa o contador do WaitGroup wg
+	wg.Done()
+}
+```
+
+## Select
+
+Select é uma forma de escolher qual dos caminhos o código irá seguir, similar ao funcionamento do switch, mas nesse caso o select é utilizado com Channels. Caso o select não possua um caminho _default_ o código fica parado até que algum dos casos sejam satisfeitos. Veja abaixo um exemplo funcional e outro onde há deadlock.
+
+**Código funcional**
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var c1, c2 chan int
+	select {
+	case <-c1:
+	case <-c2:
+	default:
+		fmt.Println("Fim")
+	}
+}
+```
+
+**Código com deadlock**
+
+```go
+package main
+
+func main() {
+	var c1, c2 chan int
+	select {
+	case <-c1:
+	case <-c2:
+	}
+}
+```
+
+**Resultado da execução desse código com deadlock**
+
+```bash
+fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [select]:
+main.main()
+        /home/breno/study-programming/go/select.go:5 +0x45
+exit status 2
+```
