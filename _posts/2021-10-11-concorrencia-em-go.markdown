@@ -104,6 +104,7 @@ Em suma, podemos ver que conseguimos otimizar nosso código usando concorrência
 - Go Routines
 - Channels
 - WaitGroup
+- Select
 
 ## Go Routines
 
