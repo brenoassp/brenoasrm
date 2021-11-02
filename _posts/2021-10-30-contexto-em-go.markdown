@@ -6,7 +6,7 @@ date: 2021-10-30 08:00:00 -0300
 
 ## Qual problema o Contexto resolve?
 
-*Context* é um pacote em Go desenvolvido para:
+_Context_ é um pacote em Go desenvolvido para:
 
 1 - Permitir informação com escopo da requisição ser passada para frente durante o ciclo de vida da requisição. Isso permite o acesso a essas informações em várias partes do código, inclusive em funções executadas de maneira concorrente em diferentes Go Routines.
 
@@ -21,6 +21,7 @@ Uma forma de manter a comunicação entre todas as Go Routines sendo executadas 
 Outra possibilidade de uso do contexto é armazenar informações com escopo da requisição como o requestID. Desse modo, caso ocorrer erro em algum momento do código, esse ID pode ser utilizado na resposta e/ou no log de erro.
 
 O pacote contexto define um tipo com os seguintes métodos:
+
 ```go
 type Context interface {
 	// Deadline returns the time when work done on behalf of this context
@@ -58,7 +59,7 @@ Os métodos responsáveis pela comunicação de sinais de cancelamento são:
 
 O método responsável por retornar valores armazenados no contexto é o Value().
 
-## Usando contextos para trafegar informações com escopo de requisição
+## Usando contextos para trafegar informações
 
 Não é possível adicionar novos valores a um contexto que já existe e nem alterar um valor já existente. Caso alguma dessas operações sejam necessárias é preciso criar um novo contexto. No exemplo abaixo, `newCtx` é o novo contexto criado com a chave `c` e o valor `20`. Se for necessário adicionar um outro valor no contexto, basta fazer a mesma coisa utilizando o `newCtx` como parâmetro.
 
@@ -77,17 +78,22 @@ func main() {
 }
 ```
 
+Apesar de ser possível utilizar contexto para trafegar qualquer tipo de informação, essa prática não é considerada boa e é preciso avaliar com cuidado se há realmente necessidade do tráfego da informação ser através de contexto.
+
+**Cenário adequado para tráfegar informações com contexto:** Se temos um dado na raíz e precisamos dele em várias partes do código para um caso de uso que pode ocorrer ou não como logs, audit, gerenciamento de goroutines, timeouts e etc.
+
+**Cenário não adequado para tráfegar informações com contexto:** Se temos a necessidade de passar alguma informação no código e não esse tipod e informação não se encaixa no cenário acima é inapropriado utilizar o contexto porque o código deixa de receber argumentos explícitos que são usados na lógica da aplicação e passa a receber informações implícitas dentro do contexto. Essa característica deixa o código mais difícil de entender e mais difícil de escrever.
+
 ## Usando contextos para abortar execução de código que esteja demorando muito
 
 Vamos ver como ficaria um exemplo de uso de contexto para abortar a execução de código concorrente. Nosso código será uma API com uma rota de `/calcularFrete`. O trabalho dessa rota será verificar de forma concorrente o preço do frete em duas APIs diferentes, a API dos correios e a API da sequoia. Nossa API retornará assim que receber a primeira resposta, independente do valor. Outra característica da nossa API é que essa rota terá um prazo máximo de 2 segundos para resposta, ou seja, caso as APIs dos serviços externos demorarem mais que isso nós abortaremos a execução usando contexto.
 
 O primeiro passo a ser feito é criar um contexto com um prazo de 2 segundos. Ao expirar esse prazo, é enviado um sinal para um channel que pode ser escutado com o métodp Done(). Ou seja, utilizamos esse `channel` para verificar se devemos ou não abortar a execução.
 
-No código foi utilizado `sleep` para simular o tempo de resposta de cada uma das APIs externas. 
+No código foi utilizado `sleep` para simular o tempo de resposta de cada uma das APIs externas.
 Para testar os diferentes cenários do código abaixo, basta alterar o tempo de duração dos `sleeps`. Colocando valores maior que 2 para ambas as APIs de calcular frete conseguimos ver que o `timeout` ocorre. Já quando uma delas possui um valor menor que 2 o código consegue executar normalmente.
 
 ![]({{site.url}}/assets/img/contexto-go/api-calcular-frete.png)
-
 
 ```go
 package main
@@ -100,17 +106,16 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/calcularFrete", calcularFrete)
+	http.HandleFunc("/", calculaFrete)
 	http.ListenAndServe(":8080", nil)
 }
 
 func getFreteCorreios(ctx context.Context) (float32, error) {
 	r := make(chan float32)
+
 	// calcula valor do frete usando os Correios como transportadora
-	go func() {
-		time.Sleep(5 * time.Second)
-		r <- 10
-	}()
+	go requestFreteFor("correios", r)
+
 	select {
 	case <-ctx.Done():
 		// tempo expirou
@@ -118,16 +123,26 @@ func getFreteCorreios(ctx context.Context) (float32, error) {
 	case c := <-r:
 		// deu certo
 		return c, nil
+	}
+}
+
+func requestFreteFor(transportadora string, result chan float32) {
+	switch transportadora {
+	case "correios":
+		time.Sleep(5 * time.Second) // aguardando valor do frete usando os Correios como transportadora
+		result <- 10
+	case "sequoia":
+		time.Sleep(3 * time.Second) // aguardando valor do frete usando os Correios como transportadora
+		result <- 15
 	}
 }
 
 func getFreteSequoia(ctx context.Context) (float32, error) {
 	r := make(chan float32)
+
 	// calcula valor do frete usando a Sequoia como transportadora
-	go func() {
-		time.Sleep(1 * time.Second)
-		r <- 15
-	}()
+	go requestFreteFor("sequoia", r)
+
 	select {
 	case <-ctx.Done():
 		// tempo expirou
@@ -138,8 +153,7 @@ func getFreteSequoia(ctx context.Context) (float32, error) {
 	}
 }
 
-func calcularFrete(w http.ResponseWriter, req *http.Request) {
-	// cria contexto com timeout de 2 segundos
+func calculaFrete(w http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(req.Context(), 2*time.Second)
 	defer cancel()
 
