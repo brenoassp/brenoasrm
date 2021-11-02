@@ -126,17 +126,6 @@ func getFreteCorreios(ctx context.Context) (float32, error) {
 	}
 }
 
-func requestFreteFor(transportadora string, result chan float32) {
-	switch transportadora {
-	case "correios":
-		time.Sleep(5 * time.Second) // aguardando valor do frete usando os Correios como transportadora
-		result <- 10
-	case "sequoia":
-		time.Sleep(3 * time.Second) // aguardando valor do frete usando os Correios como transportadora
-		result <- 15
-	}
-}
-
 func getFreteSequoia(ctx context.Context) (float32, error) {
 	r := make(chan float32)
 
@@ -150,6 +139,17 @@ func getFreteSequoia(ctx context.Context) (float32, error) {
 	case c := <-r:
 		// deu certo
 		return c, nil
+	}
+}
+
+func requestFreteFor(transportadora string, result chan float32) {
+	switch transportadora {
+	case "correios":
+		time.Sleep(5 * time.Second) // aguardando valor do frete usando os Correios como transportadora
+		result <- 10
+	case "sequoia":
+		time.Sleep(3 * time.Second) // aguardando valor do frete usando os Correios como transportadora
+		result <- 15
 	}
 }
 
