@@ -8,15 +8,15 @@ date: 2021-10-30 08:00:00 -0300
 
 _Context_ é um pacote em Go desenvolvido para:
 
-1 - Permitir informação com escopo da requisição ser passada para frente durante o ciclo de vida da requisição. Isso permite o acesso a essas informações em várias partes do código, inclusive em funções executadas de maneira concorrente em diferentes Go Routines.
+1 - Permitir informação com escopo da requisição ser passada para frente durante o ciclo de vida da requisição. Isso permite o acesso a essas informações em várias partes do código, inclusive em funções executadas de maneira concorrente em diferentes goroutines.
 
 2 - Permitir o cancelamento prematuro de código concorrente quando ocorrer algum erro ou o prazo para o código ser executado expirar.
 
 ## Introdução
 
-Um código concorrente possui diversas Go Routines sendo executadas ao mesmo tempo e frequentemente é necessário abortar a execução desse código quando algo dá errado em uma dessas funções, caso contrário recursos serão gastos desnecessariamente.
+Um código concorrente possui diversas goroutines sendo executadas ao mesmo tempo e frequentemente é necessário abortar a execução desse código quando algo dá errado em uma dessas funções, caso contrário recursos serão gastos desnecessariamente.
 
-Uma forma de manter a comunicação entre todas as Go Routines sendo executadas é utilizando contexto. Quando uma requisição inicia, um novo contexto é criado. A partir desse contexto, outros podem ser criados, formando uma árvore de contextos. Nessa árvore, quando um contexto finaliza a execução por algum motivo, todos os contextos filhos também são finalizados.
+Uma forma de manter a comunicação entre todas as goroutines sendo executadas é utilizando contexto. Quando uma requisição inicia, um novo contexto é criado. A partir desse contexto, outros podem ser criados, formando uma árvore de contextos. Nessa árvore, quando um contexto finaliza a execução por algum motivo, todos os contextos filhos também são finalizados.
 
 Outra possibilidade de uso do contexto é armazenar informações com escopo da requisição como o requestID. Desse modo, caso ocorrer erro em algum momento do código, esse ID pode ser utilizado na resposta e/ou no log de erro.
 
@@ -51,11 +51,11 @@ type Context interface {
 
 Os métodos responsáveis pela comunicação de sinais de cancelamento são:
 
-1 - Deadline()
+1 - Deadline(): Vai retornar a data após a qual essa goroutine deverá parar de executar
 
-2 - Done()
+2 - Done(): Retorna um channel que será fechado caso a goroutine seja cancelada (Para testar se o channel fechou use: <-ctx.Done())
 
-3 - Err()
+3 - Err(): Retorna um erro se a goroutine já foi cancelada, não existe outro tipo de erro retornado pelo context.
 
 O método responsável por retornar valores armazenados no contexto é o Value().
 
@@ -82,7 +82,7 @@ Apesar de ser possível utilizar contexto para trafegar qualquer tipo de informa
 
 **Cenário adequado para tráfegar informações com contexto:** Se temos um dado na raíz e precisamos dele em várias partes do código para um caso de uso que pode ocorrer ou não como logs, audit, gerenciamento de goroutines, timeouts e etc.
 
-**Cenário não adequado para tráfegar informações com contexto:** Se temos a necessidade de passar alguma informação no código e não esse tipod e informação não se encaixa no cenário acima é inapropriado utilizar o contexto porque o código deixa de receber argumentos explícitos que são usados na lógica da aplicação e passa a receber informações implícitas dentro do contexto. Essa característica deixa o código mais difícil de entender e mais difícil de escrever.
+**Cenário não adequado para tráfegar informações com contexto:** Se temos a necessidade de passar alguma informação no código e não esse tipo de informação não se encaixa no cenário acima é inapropriado utilizar o contexto porque o código deixa de receber argumentos explícitos que são usados na lógica da aplicação e passa a receber informações implícitas dentro do contexto. Essa característica deixa o código mais difícil de entender e mais difícil de escrever.
 
 ## Usando contextos para abortar execução de código que esteja demorando muito
 
