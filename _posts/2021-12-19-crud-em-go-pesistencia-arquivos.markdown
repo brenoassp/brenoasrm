@@ -27,7 +27,7 @@ Com isso em mente, a gente já consegue ir para a parte de implementação do c�
 
 ### Rota de criação de pessoas (POST /person/)
 
-O primeiro passo é criar o projeto. Para isso, vou abrir um terminal, criar uma pasta com o nome do projeto, no nosso caso vai ser api-crud-persistencia-arquivo. Em seguida, vou inicializar um novo módulo nessa pasta que a gente acabou de criar utilizando o `go mod init github.com/brenoass/api-crud-persistencia-arquivo`. Agora que nosso módulo já está inicializado, vamos criar aqui um arquivo `main.go` que vai ser a nossa API.
+O primeiro passo é criar o projeto. Para isso, vou abrir um terminal, criar uma pasta com o nome do projeto, no nosso caso vai ser api-crud-persistencia-arquivo. Em seguida, vou inicializar um novo módulo nessa pasta que a gente acabou de criar utilizando o `go mod init github.com/brenoassp/api-crud-persistencia-arquivo`. Agora que nosso módulo já está inicializado, vamos criar aqui um arquivo `main.go` que vai ser a nossa API.
 
 ```go
 package main
@@ -41,12 +41,14 @@ func main(){
 }
 ```
 
-A primeira coisa que estamos fazendo aqui é criando uma função que será executada quando chegar requisições que começam com `/person/`. Note que nesse caso aqui não estamos escolhendo qual o método HTTP utilizado, ou seja, as todas as requisições que se encaixar no padrão de URL executarão essa mesma função.
+A primeira coisa que estamos fazendo aqui é criando uma função que será executada quando chegar requisições que começam com `/person/`. Note que nesse caso aqui não estamos escolhendo qual o método HTTP utilizado, ou seja, todas as requisições que se encaixarem no padrão de URL executarão essa mesma função.
 
-Podemos executar o código para ver que indepente do método, o retorno é o mesmo. Para isso faça:
+Podemos executar o código para ver que independente do método, o retorno será o mesmo. Para isso faça:
 
 `go run main.go`
+
 `curl -XPOST localhost:8080/person/`
+
 `curl -XGET localhost:8080/person/`
 
 Ambos os resultados são iguais pois não há distinção de método e teremos que ter isso em mente durante a implementação da API.
@@ -144,7 +146,7 @@ type People struct {
 }
 ```
 
-Voltando pra criação nosso serviço, no momento de criação do serviço responsável pela lógica de negócio de pessoas, eu vou receber o caminho completo do arquivo como parâmetro. Se o arquivo não existir, então eu crio um arquivo vazio. Se ele existir então eu vou pegar todas as pessoas armazenadas nele e colocar na variável people. Essa abordagem tá longe de ser a ideal porque vamos gastar bastante memória se o arquivo for grande, mas como no nosso caso aqui o objetivo é mostrar como manipular arquivos e construir uma API, eu não estou preocupado com essa otimização. Até porque, num caso real a gente provavelmente utilizaria um banco de dados ao invés de um arquivo como forma de persistência.
+Voltando pra criação do serviço responsável pela lógica de negócio de pessoas, eu vou receber o caminho completo do arquivo como parâmetro. Se o arquivo não existir, então eu crio um arquivo vazio. Se ele existir então eu vou pegar todas as pessoas armazenadas nele e colocar na variável people. Essa abordagem tá longe de ser a ideal porque vamos gastar bastante memória se o arquivo for grande, mas como no nosso caso aqui o objetivo é mostrar como manipular arquivos e construir uma API, eu não estou preocupado com essa otimização. Até porque, num caso real a gente provavelmente utilizaria um banco de dados ao invés de um arquivo como forma de persistência.
 
 O primeiro passo é verificar se o arquivo passado já existe. O método `Stat` do pacote `os` nos dá informações sobre o arquivo e caso o arquivo não exista é retornado um erro. Esse erro pode ser usado no método IsNotExist para ver se o arquivo não existe. Se for esse o caso a gente cria o arquivo. Se o erro não for desse tipo então aconteceu algo inesperado que não sabemos como tratar, nesse caso vamos apenas retornar esse erro na criação do serviço.
 
@@ -193,10 +195,9 @@ func NewService(dbFilePath string) (Service, error) {
 }
 ```
 
-Primeiro eu vou criar uma variável do tipo People que vai ter uma slice vazia de pessoas, já que o arquivo não terá nenhuma pessoa inicialmente. Eu vou codificar essa variável para json utilizando o método `Marshal` do pacote `json`. Se der algum erro na codificação eu vou retornar um erro.
+A parte de criação de um arquivo vazio eu vou mover para um método separado, nesse método o primeiro passo
+será criar uma variável do tipo People que vai ter uma slice vazia de pessoas, já que o arquivo não terá nenhuma pessoa inicialmente. Eu vou codificar essa variável para json utilizando o método `Marshal` do pacote `json`. Se der algum erro na codificação um erro será retornado.
 Se der tudo certo eu vou salvar esse JSON no arquivo, pra isso vou utilizar a função `WriteFile` do pacote `ioutil`. Aqui eu vou passar as permissões do arquivo como 0755, mas na prática acho que poderia ter um pouco menos de permissão nesse caso. Se der erro eu vou retornar erro e se der tudo certo eu retorno `nil`.
-
-A parte de criação do arquivo vazio eu decidi extrair para um método separado.
 
 ```go
 func createEmptyFile(dbFilePath string) error {
@@ -363,7 +364,7 @@ func main() {
 
 ### Rota de atualização de pessoas (PUT /person/)
 
-A rota de atualização de pessoas é, de certa forma, similar à rota de criação de pessoasl.
+A rota de atualização de pessoas é, de certa forma, similar à rota de criação de pessoas.
 Ela também receberá como payload as mesmas informações da pessoa, com a única diferença de que
 ao invés de criar a pessoa, ela utilizará o ID fornecido para buscar a pessoa que precisa ser atualizada
 no nosso arquivo. Caso não exista nenhuma pessoa com o ID fornecido, é preciso retornar um erro.
@@ -426,21 +427,21 @@ func (s *Service) Update(person domain.Person) error {
 O primeiro passo a fazer na rota de listagem de pessoas é a distinção entre
 a rota de listagem de uma única pessoa e a rota de listagem de todas as pessoas
 do nosso arquivo. Para isso, vamos utilizar o método `TrimPrefix` passando o
-que veio no PATH da URL e o prefixo que querendo excluir `/person/`, com isso
+que veio no PATH da URL e o prefixo que queremos excluir `/person/`, com isso
 teremos dois possíveis resultados:
 
 1 - a string vazia `""` se não tiver nada após o prefixo.
 
 2 - uma string com o conteúdo contido após a string `/person/`.
 
-No primeiro caso significa que precisamos retornas todas as pessoas.
+No primeiro caso significa que precisamos retornar todas as pessoas.
 
 Já no segundo precisamos verificar se o conteúdo é um ID válido e, caso for, buscar a pessoa
 que possui esse ID no nosso arquivo. Primeiro tentamos converter para inteiro essa string com
 o método `Atoi` do pacote `strconv`, se der errado então já sabemos que não é um ID válido e
 podemos responder com um erro. Caso a conversão aconteça com sucesso, fazemos a validação se
 o ID fornecido é um número inteiro positivo. Por fim, se passar em todas as validações,
-estamos aptos a buscar a pessoa com o ID fornecido no nosso arquivo.
+estamos aptos a buscar a pessoa com o ID fornecido.
 
 ```go
 if r.Method == "GET" {
@@ -480,7 +481,8 @@ if r.Method == "GET" {
 No nosso serviço nós teremos duas funções diferentes, uma para cada um dos cenários acima.
 No caso de não ser passado nenhum ID, iremos listar todas as pessoas do nosso arquivo. Como
 o código que fizemos foi feito de tal forma a deixar sempre a slice do serviço atualizada
-com o nosso arquivo, basta retornar o conteúdo dessa slice,
+com o nosso arquivo, basta retornar o conteúdo dessa slice quando quisermos saber quais
+são as pessoas presentes no arquivo.
 
 Já no caso de retornar uma pessoa com base no ID, é preciso buscar na slice se existe
 alguma pessoa com o ID fornecido e retorná-la caso a encontre. Se não for o caso, basta
@@ -536,7 +538,7 @@ Será necessário criar o método `DeleteByID` no serviço para deletar a pessoa
 Assim como no método de `Update`, é necessário utilizar o ponteiro na assinatura do método para
 realizar a alteração da slice original.
 
-O primeiro passo é pesquisar na slice se existe uma pessoa com o ID fornecido, caso não exista
+O primeiro passo é pesquisar na slice se existe uma pessoa com o ID fornecido, caso não exista,
 um erro de pessoa não encontrada deve ser retornado. Caso a pessoa seja encontrada, criamos uma
 nova slice que não contenha a pessoa que deve ser deletada e a armazenamos na variável people do
 nosso serviço. Por fim, atualizamos nosso arquivo com o conteúdo novo dessa variável com o método
