@@ -4,7 +4,7 @@ title: "Construindo um CRUD em Go com persistência em Arquivos"
 date: 2021-12-19 14:00:00 -0300
 ---
 
-## Construindo um CRUD em Go com persistência em Arquivos
+## Construindo um CRUD em Go com Persistência em Arquivos
 
 ### Introdução
 
