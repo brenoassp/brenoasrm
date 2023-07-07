@@ -68,6 +68,5 @@ alta de interrupções diminui o engajamento consideravelmente, mas somente até
 
 # Redes Sociais
 
-- [Linkedin](https://www.linkedin.com/in/brenoalmeida)
 - [Github](https://github.com/brenoassp)
 - [Twitter](https://twitter.com/brenoassp)
