@@ -24,7 +24,6 @@ description: >- # this means to ignore newlines until "baseurl:"
   Site pessoal de Breno Machado, desenvolvedor de software e mestre em Ciência da Computação.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://brenoassp.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: brenoassp
 github_username:  brenoassp
 youtube_channel: UCIbx-Dwk-ZvBVYZ-X_ka_og
 youtube_channel_name: Breno Almeida
